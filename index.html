@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+  <title>loan calculator </title>
+</head>
+<body>
+  #include <math.h>
+#include <stdio.h>
+
+
+int main() {
+  double principal, annualRate, monthlyRate, emi, totalPayment, totalInterest;
+  int years, totalMonths, i;
+  double interestPaid, principalPaid, remainingBalance;
+
+  // Input
+  printf("Enter Principal Amount: ");
+  if (scanf("%lf", &principal) != 1 || principal <= 0) {
+    printf("Invalid input for Principal.\n");
+    return 1;
+  }
+
+  printf("Enter Annual Interest Rate (%%): ");
+  if (scanf("%lf", &annualRate) != 1 || annualRate < 0) {
+    printf("Invalid input for Interest Rate.\n");
+    return 1;
+  }
+
+  printf("Enter Tenure (in years): ");
+  if (scanf("%d", &years) != 1 || years <= 0) {
+    printf("Invalid input for Tenure.\n");
+    return 1;
+  }
+
+  // Calculations
+  monthlyRate = annualRate / (12 * 100);
+  totalMonths = years * 12;
+
+  if (annualRate == 0) {
+    emi = principal / totalMonths;
+    totalPayment = principal;
+    totalInterest = 0;
+  } else {
+    // EMI Formula: E = P * r * (1+r)^n / ((1+r)^n - 1)
+    emi = principal * monthlyRate * pow(1 + monthlyRate, totalMonths) /
+          (pow(1 + monthlyRate, totalMonths) - 1);
+    totalPayment = emi * totalMonths;
+    totalInterest = totalPayment - principal;
+  }
+
+  // Output Summary
+  printf("\n--- Loan Summary ---\n");
+  printf("Principal Amount: %.2lf\n", principal);
+  printf("Annual Interest Rate: %.2lf%%\n", annualRate);
+  printf("Tenure: %d years (%d months)\n", years, totalMonths);
+  printf("Monthly EMI: %.2lf\n", emi);
+  printf("Total Interest Payable: %.2lf\n", totalInterest);
+  printf("Total Payment (Principal + Interest): %.2lf\n", totalPayment);
+
+  // Amortization Schedule
+  printf("\n--- Amortization Schedule ---\n");
+  printf("%-6s | %-15s | %-12s | %-12s | %-15s | %-15s\n", "Month",
+         "Opening Bal", "EMI", "Interest", "Principal", "Closing Bal");
+  printf("---------------------------------------------------------------------"
+         "-------------------\n");
+
+  remainingBalance = principal;
+
+  for (i = 1; i <= totalMonths; i++) {
+    double openingBalance = remainingBalance;
+    double currentEMI = emi;
+
+    interestPaid = openingBalance * monthlyRate;
+    principalPaid = currentEMI - interestPaid;
+
+    // Adjust for last month to ensure exact closure
+    if (i == totalMonths || principalPaid > openingBalance) {
+      principalPaid = openingBalance;
+      currentEMI = principalPaid + interestPaid;
+      remainingBalance = 0;
+    } else {
+      remainingBalance = openingBalance - principalPaid;
+    }
+
+    printf("%-6d | %-15.2lf | %-12.2lf | %-12.2lf | %-15.2lf | %-15.2lf\n", i,
+           openingBalance, currentEMI, interestPaid, principalPaid,
+           remainingBalance);
+  }
+
+  // Keep window open if run directly
+  printf("\nPress Enter to exit...");
+  getchar(); // Consume newline from last scanf
+  getchar(); // Wait for key press
+
+  return 0;
+}
+
+</body>
+</html>
